@@ -1,0 +1,3 @@
+- Inviare il messaggio come un JSON (data-ora, username, [colore username], messaggio)
+- Fare il b64 del messaggio cifrato, così da inviare solo testo e non byte vari (comunque sembra funzionare lo stesso)
+- Guardare bene per il replace di \x0c e altri caratteri di padding
