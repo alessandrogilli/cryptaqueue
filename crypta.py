@@ -1,8 +1,11 @@
 import base64
+import json
 import string
 
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
+
+from colors import Colors
 
 
 class Crypta:
@@ -39,18 +42,16 @@ class Crypta:
     def try_decrypt(self, ciphertext) -> str | None:
         try:
             plaintext = self.decrypt(ciphertext)
-            # print(repr(plaintext.decode("utf-8"))) # Debug
             decoded = plaintext.decode("utf-8")
-            result = "".join(
+            decoded = "".join(
                 [
                     x
                     for x in decoded
-                    if x in string.printable and x not in ["\x0b", "\x0c", "\n"]
+                    if x in string.printable[:-5]  # Excludes \t, \n, \r, \x0b, \x0c
                 ]
             )
+            d = json.loads(decoded)
+            result = f'{d.get("time") or ""} - {d.get("color") or ""}{d.get("usn") or ""}: {d.get("msg") or ""}{Colors.END}'
             return result
         except:
             return None
-
-    def string2hash(self, string):
-        return base64.b64encode(SHA256.new(string.encode()).digest()).decode()
