@@ -1,10 +1,13 @@
 import argparse
 import datetime
+import json
 import os
+from enum import Enum
 
 import paho.mqtt.publish as publish
 from dotenv import load_dotenv
 
+from colors import Colors
 from crypta import Crypta
 
 if __name__ == "__main__":
@@ -17,6 +20,9 @@ if __name__ == "__main__":
     CHAT_USERNAME = os.getenv("CHAT_USERNAME")
     if not CHAT_USERNAME:
         CHAT_USERNAME = os.popen("uname -n").read().rstrip("\n")
+
+    COLOR = os.getenv("COLOR") or ""
+    COLOR = getattr(Colors, COLOR, None)
 
     print(f"Welcome to CryptaQueue Chat Sender.")
     print(f"Broker address: {BROKER_ADDRESS}")
@@ -50,10 +56,21 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             exit()
 
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        plaintext = f"{current_time} - {CHAT_USERNAME}: {msg}"
-        ciphertext = cr.encrypt(plaintext=plaintext)
-        try:
-            publish.single(TOPIC, ciphertext, hostname=BROKER_ADDRESS, port=BROKER_PORT)
-        except:
-            print("Connection error.")
+        if msg:
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            plaintext_json = {
+                "time": current_time,
+                "usn": CHAT_USERNAME,
+                "msg": msg,
+            }
+            if COLOR:
+                plaintext_json["color"] = COLOR
+            plaintext = json.dumps(plaintext_json)
+            # plaintext = f"{current_time} - {CHAT_USERNAME}: {msg}"
+            ciphertext = cr.encrypt(plaintext=plaintext)
+            try:
+                publish.single(
+                    TOPIC, ciphertext, hostname=BROKER_ADDRESS, port=BROKER_PORT
+                )
+            except:
+                print("Connection error.")

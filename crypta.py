@@ -1,7 +1,11 @@
 import base64
+import json
+import string
 
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
+
+from colors import Colors
 
 
 class Crypta:
@@ -24,25 +28,30 @@ class Crypta:
         aes = AES.new(
             SHA256.new(str.encode(self.PASSWORD)).digest(), AES.MODE_CBC, self.IV
         )
-        return aes.encrypt(plaintext)
+        return base64.b64encode(aes.encrypt(plaintext))
 
     def decrypt(self, ciphertext) -> bytes | None:
         try:
             aes = AES.new(
                 SHA256.new(str.encode(self.PASSWORD)).digest(), AES.MODE_CBC, self.IV
             )
-            return aes.decrypt(ciphertext)
+            return aes.decrypt(base64.b64decode(ciphertext))
         except:
             return None
 
     def try_decrypt(self, ciphertext) -> str | None:
-        plaintext = self.decrypt(ciphertext)
         try:
-            # print(repr(plaintext.decode("utf-8"))) # Debug
-            result = plaintext.decode("utf-8").rstrip("\x0c").rstrip("\n")
+            plaintext = self.decrypt(ciphertext)
+            decoded = plaintext.decode("utf-8")
+            decoded = "".join(
+                [
+                    x
+                    for x in decoded
+                    if x in string.printable[:-5]  # Excludes \t, \n, \r, \x0b, \x0c
+                ]
+            )
+            d = json.loads(decoded)
+            result = f'{d.get("time") or ""} - {d.get("color") or ""}{d.get("usn") or ""}: {d.get("msg") or ""}{Colors.END}'
             return result
         except:
             return None
-
-    def string2hash(self, string):
-        return base64.b64encode(SHA256.new(string.encode()).digest()).decode()
