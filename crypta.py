@@ -1,4 +1,5 @@
 import base64
+import string
 
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
@@ -24,22 +25,29 @@ class Crypta:
         aes = AES.new(
             SHA256.new(str.encode(self.PASSWORD)).digest(), AES.MODE_CBC, self.IV
         )
-        return aes.encrypt(plaintext)
+        return base64.b64encode(aes.encrypt(plaintext))
 
     def decrypt(self, ciphertext) -> bytes | None:
         try:
             aes = AES.new(
                 SHA256.new(str.encode(self.PASSWORD)).digest(), AES.MODE_CBC, self.IV
             )
-            return aes.decrypt(ciphertext)
+            return aes.decrypt(base64.b64decode(ciphertext))
         except:
             return None
 
     def try_decrypt(self, ciphertext) -> str | None:
-        plaintext = self.decrypt(ciphertext)
         try:
+            plaintext = self.decrypt(ciphertext)
             # print(repr(plaintext.decode("utf-8"))) # Debug
-            result = plaintext.decode("utf-8").rstrip("\x0c").rstrip("\n")
+            decoded = plaintext.decode("utf-8")
+            result = "".join(
+                [
+                    x
+                    for x in decoded
+                    if x in string.printable and x not in ["\x0b", "\x0c", "\n"]
+                ]
+            )
             return result
         except:
             return None

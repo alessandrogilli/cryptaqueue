@@ -50,10 +50,13 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             exit()
 
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        plaintext = f"{current_time} - {CHAT_USERNAME}: {msg}"
-        ciphertext = cr.encrypt(plaintext=plaintext)
-        try:
-            publish.single(TOPIC, ciphertext, hostname=BROKER_ADDRESS, port=BROKER_PORT)
-        except:
-            print("Connection error.")
+        if msg:
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            plaintext = f"{current_time} - {CHAT_USERNAME}: {msg}"
+            ciphertext = cr.encrypt(plaintext=plaintext)
+            try:
+                publish.single(
+                    TOPIC, ciphertext, hostname=BROKER_ADDRESS, port=BROKER_PORT
+                )
+            except:
+                print("Connection error.")
