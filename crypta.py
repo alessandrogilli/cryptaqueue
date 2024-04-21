@@ -5,8 +5,6 @@ import string
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
 
-from colors import Colors
-
 
 class Crypta:
     def __init__(self) -> None:
@@ -51,7 +49,8 @@ class Crypta:
                 ]
             )
             d = json.loads(decoded)
-            result = f'{d.get("time") or ""} - {d.get("color") or ""}{d.get("usn") or ""}: {d.get("msg") or ""}{Colors.END}'
-            return result
+            return d
+            # result = f'{d.get("time") or ""} - {d.get("color") or ""}{d.get("usn") or ""}: {d.get("msg") or ""}{Colors.END}'
+            # return result
         except:
             return None

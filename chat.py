@@ -1,10 +1,18 @@
 import argparse
 import os
+from colors import Colors
 
 import paho.mqtt.client as mqtt
 from dotenv import load_dotenv
 
 from crypta import Crypta
+
+import commands as cm
+
+
+def exec_command(command) -> None:
+    if command == "/discovery":
+        cm.discovery()
 
 
 def on_connect(client, userdata, flags, reason_code, properties):
@@ -16,7 +24,10 @@ def on_connect(client, userdata, flags, reason_code, properties):
 def on_message(client, userdata, msg):
     plaintext = cr.try_decrypt(msg.payload)
     if plaintext:
-        print(plaintext)
+        result = f'{plaintext.get("time") or ""} - {plaintext.get("color") or ""}{plaintext.get("usn") or ""}: {plaintext.get("msg") or ""}{Colors.END}'
+        if plaintext.get("msg")[0] == "/":
+            exec_command(plaintext.get("msg"))
+        print(result)
     else:
         print("Received an invalid message")
 

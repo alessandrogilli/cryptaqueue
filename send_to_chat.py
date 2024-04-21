@@ -10,6 +10,25 @@ from dotenv import load_dotenv
 from colors import Colors
 from crypta import Crypta
 
+
+def send_message(msg):
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    plaintext_json = {
+        "time": current_time,
+        "usn": CHAT_USERNAME,
+        "msg": msg,
+    }
+    if COLOR:
+        plaintext_json["color"] = COLOR
+    plaintext = json.dumps(plaintext_json)
+    # plaintext = f"{current_time} - {CHAT_USERNAME}: {msg}"
+    ciphertext = cr.encrypt(plaintext=plaintext)
+    try:
+        publish.single(TOPIC, ciphertext, hostname=BROKER_ADDRESS, port=BROKER_PORT)
+    except:
+        print("Connection error.")
+
+
 if __name__ == "__main__":
     cr = Crypta()
     load_dotenv()
@@ -24,10 +43,6 @@ if __name__ == "__main__":
     COLOR = os.getenv("COLOR") or ""
     COLOR = getattr(Colors, COLOR, None)
 
-    print(f"Welcome to CryptaQueue Chat Sender.")
-    print(f"Broker address: {BROKER_ADDRESS}")
-    print(f"Chat Username: {CHAT_USERNAME}")
-
     parser = argparse.ArgumentParser(description="CryptaQueue Chat Sender.")
     parser.add_argument(
         "--channel",
@@ -35,6 +50,13 @@ if __name__ == "__main__":
         const="default",
         default=None,
         help="The channel to use.",
+    )
+    parser.add_argument(
+        "--direct",
+        nargs="?",
+        const="default",
+        default=None,
+        help="Send a direct message withiut starting the client.",
     )
 
     args = parser.parse_args()
@@ -45,6 +67,13 @@ if __name__ == "__main__":
 
     TOPIC = f"{TOPIC}/{channel}"
 
+    if args.direct:
+        send_message(args.direct)
+        exit(0)
+
+    print(f"Welcome to CryptaQueue Chat Sender.")
+    print(f"Broker address: {BROKER_ADDRESS}")
+    print(f"Chat Username: {CHAT_USERNAME}")
     print(f"Topic: {TOPIC}")
 
     while True:
@@ -57,20 +86,4 @@ if __name__ == "__main__":
             exit()
 
         if msg:
-            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            plaintext_json = {
-                "time": current_time,
-                "usn": CHAT_USERNAME,
-                "msg": msg,
-            }
-            if COLOR:
-                plaintext_json["color"] = COLOR
-            plaintext = json.dumps(plaintext_json)
-            # plaintext = f"{current_time} - {CHAT_USERNAME}: {msg}"
-            ciphertext = cr.encrypt(plaintext=plaintext)
-            try:
-                publish.single(
-                    TOPIC, ciphertext, hostname=BROKER_ADDRESS, port=BROKER_PORT
-                )
-            except:
-                print("Connection error.")
+            send_message(msg)
