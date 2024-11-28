@@ -1,3 +1,4 @@
 - Add command support, e.g., :exit -> quit, :color -> change your color, ...
 - Add a login message on connect and a last will on disconnect
 - Migrate to ncurses(w) ?
+- All constants, such as username, topic, etc., should be accessible from anywhere in the app. Parsing the .env and storing that data should be done on a different file.

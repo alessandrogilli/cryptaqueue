@@ -2,7 +2,6 @@ import argparse
 import datetime
 import json
 import os
-from enum import Enum
 
 import paho.mqtt.publish as publish
 from dotenv import load_dotenv
