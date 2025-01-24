@@ -18,6 +18,9 @@ class Crypta:
         self.PASSWORD = os.getenv("PASSWORD")
 
     def encrypt(self, plaintext: str) -> bytes:
+        """
+        b64(AES(plaintext))
+        """
         # Padding PKCS#7
         plaintext = plaintext.encode()
         length = 16 - (len(plaintext) % 16)
@@ -29,6 +32,9 @@ class Crypta:
         return base64.b64encode(aes.encrypt(plaintext))
 
     def decrypt(self, ciphertext) -> bytes | None:
+        """
+        AES_d(b64_d(ciphertext))
+        """
         try:
             aes = AES.new(
                 SHA256.new(str.encode(self.PASSWORD)).digest(), AES.MODE_CBC, self.IV
@@ -50,7 +56,5 @@ class Crypta:
             )
             d = json.loads(decoded)
             return d
-            # result = f'{d.get("time") or ""} - {d.get("color") or ""}{d.get("usn") or ""}: {d.get("msg") or ""}{Colors.END}'
-            # return result
         except:
             return None

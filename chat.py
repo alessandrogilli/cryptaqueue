@@ -1,13 +1,13 @@
 import argparse
 import os
-from colors import Colors
 
 import paho.mqtt.client as mqtt
 from dotenv import load_dotenv
-
-from crypta import Crypta
+from notify import notification
 
 import commands as cm
+from colors import Colors
+from crypta import Crypta
 
 
 def exec_command(command) -> None:
@@ -28,6 +28,11 @@ def on_message(client, userdata, msg):
         if plaintext.get("msg")[0] == "/":
             exec_command(plaintext.get("msg"))
         print(result)
+        notification(
+            "New message",
+            message=f'{plaintext.get("usn") or ""}: {plaintext.get("msg") or ""}',
+            app_name="CryptaQueue",
+        )
     else:
         print("Received an invalid message")
 
